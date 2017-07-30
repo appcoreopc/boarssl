@@ -1,0 +1,250 @@
+{
+  "commandFile" : "../build/brssl",
+  "commandArgs" : "twrch {0}",
+  "chainRSA" : "conf/rsacert.pem",
+  "skeyRSA" : "conf/rsakey.pem",
+  "chainEC" : "conf/eccert.pem",
+  "skeyEC" : "conf/eckey.pem",
+  "noCloseNotify" : false,
+  "versions" : [
+    "TLS10", "TLS11", "TLS12"
+  ],
+  "cipherSuites" : [
+    "ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+    "ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+    "ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+    "ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+    "ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+    "ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+    "ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+    "ECDHE_RSA_WITH_AES_128_CBC_SHA256",
+    "ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+    "ECDHE_RSA_WITH_AES_256_CBC_SHA384",
+    "ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+    "ECDHE_RSA_WITH_AES_128_CBC_SHA",
+    "ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+    "ECDHE_RSA_WITH_AES_256_CBC_SHA",
+
+    "ECDH_ECDSA_WITH_AES_128_GCM_SHA256",
+    "ECDH_ECDSA_WITH_AES_256_GCM_SHA384",
+    "ECDH_ECDSA_WITH_AES_128_CBC_SHA256",
+    "ECDH_ECDSA_WITH_AES_256_CBC_SHA384",
+    "ECDH_ECDSA_WITH_AES_128_CBC_SHA",
+    "ECDH_ECDSA_WITH_AES_256_CBC_SHA",
+
+    "RSA_WITH_AES_128_GCM_SHA256",
+    "RSA_WITH_AES_256_GCM_SHA384",
+    "RSA_WITH_AES_128_CBC_SHA256",
+    "RSA_WITH_AES_256_CBC_SHA256",
+    "RSA_WITH_AES_128_CBC_SHA",
+    "RSA_WITH_AES_256_CBC_SHA",
+    "RSA_WITH_3DES_EDE_CBC_SHA",
+
+    "ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA",
+    "ECDHE_RSA_WITH_3DES_EDE_CBC_SHA",
+    "ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA"
+  ],
+  "hashAndSigns" : [
+    "RSA_SHA256",
+    "RSA_SHA224",
+    "RSA_SHA384",
+    "RSA_SHA512",
+    "RSA_SHA1",
+    "ECDSA_SHA256",
+    "ECDSA_SHA224",
+    "ECDSA_SHA384",
+    "ECDSA_SHA512",
+    "ECDSA_SHA1"
+  ],
+  "curves" : [
+    "Curve25519",
+    "NIST_P256",
+    "NIST_P384",
+    "NIST_P521"
+  ],
+  "tests" : [
+    {
+      "name" : "peerClose",
+      "comment" : "The peer should initiate a clean close",
+      "askClose" : "true"
+    },
+    {
+      "name" : "renegotiateNormal",
+      "comment" : "Normal renegotiation triggered from our side",
+      "renegotiate" : "true"
+    },
+    {
+      "name" : "peerRenegotiateNormal",
+      "comment" : "Normal renegotiation triggered by the peer",
+      "askRenegotiate" : "true"
+    },
+    {
+      "name" : "noSecureReneg",
+      "comment" : "Not sending secure renegotiation; renegotiation attempts should be rejected by the peer.",
+      "renegotiate" : "false",
+      "quirks" : {
+        "noSecureReneg" : "true"
+      }
+    },
+    {
+      "name" : "forceEmptySecureReneg",
+      "comment" : "Forcing empty Secure Renegotiation extension. This should be OK for first handshake, then fail during renegotiation.",
+      "renegotiate" : "true",
+      "expectedExitCode" : 1,
+      "expectedFailure" : "Unexpected transport closure",
+      "quirks" : {
+        "forceEmptySecureReneg" : "true"
+      }
+    },
+    {
+      "name" : "forceNonEmptySecureReneg",
+      "comment" : "A non-empty Secure Renegotiation extension is sent during the first handshake. The peer should call foul play and abort.",
+      "expectedExitCode" : 1,
+      "expectedFailure" : "Unexpected transport closure",
+      "quirks" : {
+        "forceNonEmptySecureReneg" : "true"
+      }
+    },
+    {
+      "name" : "alterNonEmptySecureReneg",
+      "comment" : "The Secure Renegotiation extension contents are altered during second handshake (but the length is preserved). The peer should abort.",
+      "renegotiate" : "true",
+      "expectedExitCode" : 1,
+      "expectedFailure" : "Unexpected transport closure",
+      "quirks" : {
+        "alterNonEmptySecureReneg" : "true"
+      }
+    },
+    {
+      "name" : "oversizedSecureReneg",
+      "comment" : "The Secure Renegotiation extension contents are much bigger than normal. The peer should abort.",
+      "expectedExitCode" : 1,
+      "expectedFailure" : "Unexpected transport closure",
+      "quirks" : {
+        "oversizedSecureReneg" : "true"
+      }
+    },
+    {
+      "name" : "recordSplitHalf",
+      "comment" : "All records of length 2 or more are split into two halves.",
+      "quirks" : {
+        "recordSplitMode" : "half:20,21,22,23"
+      }
+    },
+    {
+      "name" : "recordSplitZeroBefore",
+      "comment" : "All records are preceded with a zero-length record.",
+      "quirks" : {
+        "recordSplitMode" : "zero_before:20,21,22,23"
+      }
+    },
+    {
+      "name" : "recordSplitZeroHalf",
+      "comment" : "All records of length 2 or more are split into two halves, and a zero-length record is inserted between the two halves..",
+      "quirks" : {
+        "recordSplitMode" : "zero_half:20,21,22,23"
+      }
+    },
+    {
+      "name" : "recordSplitOneStart",
+      "comment" : "The first byte of each record of length 2 or more is separated into its own record.",
+      "quirks" : {
+        "recordSplitMode" : "one_start:20,21,22,23"
+      }
+    },
+    {
+      "name" : "recordSplitOneEnd",
+      "comment" : "The last byte of each record of length 2 or more is separated into its own record.",
+      "quirks" : {
+        "recordSplitMode" : "one_end:20,21,22,23"
+      }
+    },
+    {
+      "name" : "recordSplitMultiOne",
+      "comment" : "All records are split into individual records of length 1.",
+      "quirks" : {
+        "recordSplitMode" : "multi_one:20,21,22,23"
+      }
+    },
+    {
+      "name" : "emptyHandshake1",
+      "comment" : "An extra empty handshake message is inserted before the first application data record.",
+      "quirks" : {
+        "thresholdZeroHandshake" : 1
+      }
+    },
+    {
+      "name" : "emptyHandshake2",
+      "comment" : "An extra empty handshake message is inserted before the second application data record.",
+      "quirks" : {
+        "thresholdZeroHandshake" : 2
+      }
+    },
+    {
+      "name" : "emptyAppData1",
+      "comment" : "An extra empty handshake message is inserted before the first handshake record.",
+      "quirks" : {
+        "thresholdZeroAppData" : 1
+      }
+    },
+    {
+      "name" : "emptyAppData2",
+      "comment" : "An extra empty handshake message is inserted before the second handshake record.",
+      "quirks" : {
+        "thresholdZeroAppData" : 2
+      }
+    },
+    {
+      "name" : "extraServerExtension",
+      "comment" : "An extra extension is added in the ServerHello. Client should reject it. BearSSL closes the connection, so the server gets an unexpected transport closure.",
+      "clientOnly" : "true",
+      "expectedExitCode" : 1,
+      "expectedFailure" : "Unexpected transport closure",
+      "quirks" : {
+        "sendExtraExtension" : "0xA7C0"
+      }
+    },
+    {
+      "name" : "extraClientExtension",
+      "comment" : "An extra extension is added in the ClientHello. Server should ignore it.",
+      "serverOnly" : "true",
+      "quirks" : {
+        "sendExtraExtension" : "0xA7C0"
+      }
+    },
+    {
+      "name" : "reconnectSelf",
+      "comment" : "Connection is closed and reconnection is performed; the session should be resumed.",
+      "reconnect" : "self"
+    },
+    {
+      "name" : "reconnectPeer",
+      "comment" : "Peer is tasked with closing then reconnecting; the session should be resumed.",
+      "reconnect" : "peer"
+    },
+    {
+      "name" : "reconnectSelfForgetSelf",
+      "comment" : "Connection is closed and reconnection is performed. Previous session if forgotten on our part.",
+      "reconnect" : "self",
+      "forget" : "self"
+    },
+    {
+      "name" : "reconnectSelfForgetPeer",
+      "comment" : "Peer should forget session. Then we close and reconnect.",
+      "reconnect" : "self",
+      "forget" : "peer"
+    },
+    {
+      "name" : "reconnectPeerForgetSelf",
+      "comment" : "We forget the session. Peer should close and reconnect.",
+      "reconnect" : "peer",
+      "forget" : "self"
+    },
+    {
+      "name" : "reconnectPeerForgetPeer",
+      "comment" : "Peer should forget session. Peer should close and reconnect.",
+      "reconnect" : "peer",
+      "forget" : "peer"
+    }
+  ]
+}
