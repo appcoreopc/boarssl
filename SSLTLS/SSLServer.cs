@@ -453,6 +453,18 @@ public class SSLServer : SSLEngine {
 		 * resumption).
 		 */
 		Version = Math.Min(ClientVersionMax, VersionMax);
+		string forcedVersion = GetQuirkString("forceVersion");
+		if (forcedVersion != null) {
+			switch (forcedVersion) {
+			case "TLS10": Version = SSL.TLS10; break;
+			case "TLS11": Version = SSL.TLS11; break;
+			case "TLS12": Version = SSL.TLS12; break;
+			default:
+				throw new Exception(string.Format(
+					"Unknown forced version: '{0}'", 
+					forcedVersion));
+			}
+		}
 
 		/*
 		 * Recompute list of acceptable cipher suites. We keep
@@ -471,6 +483,11 @@ public class SSLServer : SSLEngine {
 		CommonCipherSuites = new List<int>();
 		List<int> commonSuitesResume = new List<int>();
 		bool canTLS12 = Version >= SSL.TLS12;
+		bool mustTLS12 = false;
+		if (GetQuirkBool("forceTls12CipherSuite")) {
+			canTLS12 = true;
+			mustTLS12 = true;
+		}
 		bool canSignRSA;
 		bool canSignECDSA;
 		if (Version >= SSL.TLS12) {
@@ -497,6 +514,9 @@ public class SSLServer : SSLEngine {
 
 		foreach (int cs in clientSuites) {
 			if (!canTLS12 && SSL.IsTLS12(cs)) {
+				continue;
+			}
+			if (mustTLS12 && !SSL.IsTLS12(cs)) {
 				continue;
 			}
 			commonSuitesResume.Add(cs);

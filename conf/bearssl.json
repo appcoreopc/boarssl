@@ -245,6 +245,17 @@
       "comment" : "Peer should forget session. Peer should close and reconnect.",
       "reconnect" : "peer",
       "forget" : "peer"
+    },
+    {
+      "name" : "tls12SuiteWithOlder",
+      "comment" : "Server selects a TLS-1.2 specific cipher suite with TLS-1.1; the client should refuse.",
+      "clientOnly" : "true",
+      "expectedExitCode" : 1,
+      "expectedFailure" : "Unexpected transport closure",
+      "quirks" : {
+        "forceVersion" : "TLS11",
+        "forceTls12CipherSuite" : "true"
+      }
     }
   ]
 }
