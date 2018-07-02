@@ -25,6 +25,8 @@
 using System;
 using System.IO;
 
+namespace IO {
+
 /*
  * This class merges two underlying streams (one for reading, the other
  * for writing) into a single Stream object. It can also optionally dump
@@ -32,15 +34,25 @@ using System.IO;
  * stream (for debugging purposes).
  */
 
-internal class MergeStream : Stream {
+public class MergeStream : Stream {
 
 	Stream subIn, subOut;
 
-	internal TextWriter Debug {
+	/*
+	 * Text stream on which to write an hexadecimal dump of the data
+	 * which is read from or written to this stream. If null (the
+	 * default), then no dump is written.
+	 */
+	public TextWriter Debug {
 		get; set;
 	}
 
-	internal MergeStream(Stream subIn, Stream subOut)
+	/*
+	 * Create this stream over the two underlying substreams:
+	 * 'subIn', from which data is read, and 'subOut', to which data
+	 * is written. The two substreams may be the same object.
+	 */
+	public MergeStream(Stream subIn, Stream subOut)
 	{
 		this.subIn = subIn;
 		this.subOut = subOut;
@@ -181,4 +193,6 @@ internal class MergeStream : Stream {
 			throw new NotSupportedException();
 		}
 	}
+}
+
 }

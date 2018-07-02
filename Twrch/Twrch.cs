@@ -30,6 +30,7 @@ using System.Text;
 
 using Asn1;
 using Crypto;
+using IO;
 using SSLTLS;
 using XKeys;
 
@@ -248,11 +249,12 @@ public class Twrch {
 		string[] r = JSON.GetStringArray(conf, "versions");
 		int[] vv = new int[r.Length];
 		for (int i = 0; i < r.Length; i ++) {
-			vv[i] = GetVersionByName(r[i]);
+			vv[i] = SSL.GetVersionByName(r[i]);
 		}
 		return vv;
 	}
 
+	/* obsolete
 	internal static int GetVersionByName(string s)
 	{
 		s = s.Replace(" ", "").Replace(".", "").ToUpperInvariant();
@@ -265,6 +267,7 @@ public class Twrch {
 				"Unknown version: '{0}'", s));
 		}
 	}
+	*/
 
 	int[] GetCipherSuites()
 	{
@@ -276,11 +279,12 @@ public class Twrch {
 	{
 		int[] r = new int[ss.Length];
 		for (int i = 0; i < ss.Length; i ++) {
-			r[i] = GetSuiteByName(ss[i]);
+			r[i] = SSL.GetSuiteByName(ss[i]);
 		}
 		return r;
 	}
 
+	/* obsolete
 	internal static int GetSuiteByName(string s)
 	{
 		switch (s) {
@@ -483,6 +487,7 @@ public class Twrch {
 				"Unknown cipher suite: '{0}'", s));
 		}
 	}
+	*/
 
 	int[] GetHashAndSigns()
 	{
@@ -494,11 +499,12 @@ public class Twrch {
 	{
 		int[] r = new int[ss.Length];
 		for (int i = 0; i < ss.Length; i ++) {
-			r[i] = GetHashAndSignByName(ss[i]);
+			r[i] = SSL.GetHashAndSignByName(ss[i]);
 		}
 		return r;
 	}
 
+	/* obsolete
 	internal static int GetHashAndSignByName(string s)
 	{
 		switch (s) {
@@ -519,6 +525,7 @@ public class Twrch {
 				"Unknown hash-and-sign: '{0}'", s));
 		}
 	}
+	*/
 
 	int[] GetCurves()
 	{
@@ -529,11 +536,12 @@ public class Twrch {
 	{
 		int[] r = new int[ss.Length];
 		for (int i = 0; i < ss.Length; i ++) {
-			r[i] = GetCurveByName(ss[i]);
+			r[i] = SSL.GetCurveByName(ss[i]);
 		}
 		return r;
 	}
 
+	/* obsolete
 	internal static int GetCurveByName(string s)
 	{
 		switch (s) {
@@ -546,6 +554,7 @@ public class Twrch {
 				"Unknown curve: '{0}'", s));
 		}
 	}
+	*/
 
 	/*
 	 * RunEnum() builds and runs synthetic tests that exercise all
@@ -982,7 +991,7 @@ public class Twrch {
 		 */
 		string svmin;
 		if (JSON.TryGetString(obj, "versionMin", out svmin)) {
-			eng.VersionMin = GetVersionByName(svmin);
+			eng.VersionMin = SSL.GetVersionByName(svmin);
 		} else {
 			eng.VersionMin = versionMin;
 		}
@@ -992,7 +1001,7 @@ public class Twrch {
 		 */
 		string svmax;
 		if (JSON.TryGetString(obj, "versionMax", out svmax)) {
-			eng.VersionMax = GetVersionByName(svmax);
+			eng.VersionMax = SSL.GetVersionByName(svmax);
 		} else {
 			eng.VersionMax = versionMax;
 		}

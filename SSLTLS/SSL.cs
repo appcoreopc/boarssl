@@ -289,6 +289,36 @@ public sealed class SSL {
 	}
 
 	/*
+	 * Parse a version name.
+	 */
+	public static int GetVersionByName(string s)
+	{
+		string t = s.Trim().Replace(" ", "").Replace(".", "")
+			.Replace("-", "").ToUpperInvariant();
+		switch (t) {
+		case "SSL3":
+		case "SSLV3":
+		case "SSL30":
+		case "SSLV30":
+			return SSL30;
+		case "TLS1":
+		case "TLSV1":
+		case "TLS10":
+		case "TLSV10":
+			return TLS10;
+		case "TLS11":
+		case "TLSV11":
+			return TLS11;
+		case "TLS12":
+		case "TLSV12":
+			return TLS12;
+		default:
+			throw new Exception(string.Format(
+				"Unknown protocol version: '{0}'", s));
+		}
+	}
+
+	/*
 	 * Get a human-readable name for a cipher suite.
 	 */
 	public static string CipherSuiteName(int cipherSuite)
@@ -498,6 +528,218 @@ public sealed class SSL {
 	}
 
 	/*
+	 * Parse a cipher suite name.
+	 */
+	public static int GetSuiteByName(string s)
+	{
+		string t = s.Trim().Replace("_", "").Replace("-", "")
+			.ToUpperInvariant();
+		if (t.StartsWith("TLS") || t.StartsWith("SSL")) {
+			t = t.Substring(3);
+		}
+		switch (t) {
+		case "NULLWITHNULLNULL":
+			return NULL_WITH_NULL_NULL;
+		case "RSAWITHNULLMD5":
+			return RSA_WITH_NULL_MD5;
+		case "RSAWITHNULLSHA":
+			return RSA_WITH_NULL_SHA;
+		case "RSAWITHNULLSHA256":
+			return RSA_WITH_NULL_SHA256;
+		case "RSAWITHRC4128MD5":
+			return RSA_WITH_RC4_128_MD5;
+		case "RSAWITHRC4128SHA":
+			return RSA_WITH_RC4_128_SHA;
+		case "RSAWITH3DESEDECBCSHA":
+			return RSA_WITH_3DES_EDE_CBC_SHA;
+		case "RSAWITHAES128CBCSHA":
+			return RSA_WITH_AES_128_CBC_SHA;
+		case "RSAWITHAES256CBCSHA":
+			return RSA_WITH_AES_256_CBC_SHA;
+		case "RSAWITHAES128CBCSHA256":
+			return RSA_WITH_AES_128_CBC_SHA256;
+		case "RSAWITHAES256CBCSHA256":
+			return RSA_WITH_AES_256_CBC_SHA256;
+		case "DHDSSWITH3DESEDECBCSHA":
+			return DH_DSS_WITH_3DES_EDE_CBC_SHA;
+		case "DHRSAWITH3DESEDECBCSHA":
+			return DH_RSA_WITH_3DES_EDE_CBC_SHA;
+		case "DHEDSSWITH3DESEDECBCSHA":
+			return DHE_DSS_WITH_3DES_EDE_CBC_SHA;
+		case "DHERSAWITH3DESEDECBCSHA":
+			return DHE_RSA_WITH_3DES_EDE_CBC_SHA;
+		case "DHDSSWITHAES128CBCSHA":
+			return DH_DSS_WITH_AES_128_CBC_SHA;
+		case "DHRSAWITHAES128CBCSHA":
+			return DH_RSA_WITH_AES_128_CBC_SHA;
+		case "DHEDSSWITHAES128CBCSHA":
+			return DHE_DSS_WITH_AES_128_CBC_SHA;
+		case "DHERSAWITHAES128CBCSHA":
+			return DHE_RSA_WITH_AES_128_CBC_SHA;
+		case "DHDSSWITHAES256CBCSHA":
+			return DH_DSS_WITH_AES_256_CBC_SHA;
+		case "DHRSAWITHAES256CBCSHA":
+			return DH_RSA_WITH_AES_256_CBC_SHA;
+		case "DHEDSSWITHAES256CBCSHA":
+			return DHE_DSS_WITH_AES_256_CBC_SHA;
+		case "DHERSAWITHAES256CBCSHA":
+			return DHE_RSA_WITH_AES_256_CBC_SHA;
+		case "DHDSSWITHAES128CBCSHA256":
+			return DH_DSS_WITH_AES_128_CBC_SHA256;
+		case "DHRSAWITHAES128CBCSHA256":
+			return DH_RSA_WITH_AES_128_CBC_SHA256;
+		case "DHEDSSWITHAES128CBCSHA256":
+			return DHE_DSS_WITH_AES_128_CBC_SHA256;
+		case "DHERSAWITHAES128CBCSHA256":
+			return DHE_RSA_WITH_AES_128_CBC_SHA256;
+		case "DHDSSWITHAES256CBCSHA256":
+			return DH_DSS_WITH_AES_256_CBC_SHA256;
+		case "DHRSAWITHAES256CBCSHA256":
+			return DH_RSA_WITH_AES_256_CBC_SHA256;
+		case "DHEDSSWITHAES256CBCSHA256":
+			return DHE_DSS_WITH_AES_256_CBC_SHA256;
+		case "DHERSAWITHAES256CBCSHA256":
+			return DHE_RSA_WITH_AES_256_CBC_SHA256;
+		case "DHANONWITHRC4128MD5":
+			return DH_anon_WITH_RC4_128_MD5;
+		case "DHANONWITH3DESEDECBCSHA":
+			return DH_anon_WITH_3DES_EDE_CBC_SHA;
+		case "DHANONWITHAES128CBCSHA":
+			return DH_anon_WITH_AES_128_CBC_SHA;
+		case "DHANONWITHAES256CBCSHA":
+			return DH_anon_WITH_AES_256_CBC_SHA;
+		case "DHANONWITHAES128CBCSHA256":
+			return DH_anon_WITH_AES_128_CBC_SHA256;
+		case "DHANONWITHAES256CBCSHA256":
+			return DH_anon_WITH_AES_256_CBC_SHA256;
+		case "ECDHECDSAWITHNULLSHA":
+			return ECDH_ECDSA_WITH_NULL_SHA;
+		case "ECDHECDSAWITHRC4128SHA":
+			return ECDH_ECDSA_WITH_RC4_128_SHA;
+		case "ECDHECDSAWITH3DESEDECBCSHA":
+			return ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA;
+		case "ECDHECDSAWITHAES128CBCSHA":
+			return ECDH_ECDSA_WITH_AES_128_CBC_SHA;
+		case "ECDHECDSAWITHAES256CBCSHA":
+			return ECDH_ECDSA_WITH_AES_256_CBC_SHA;
+		case "ECDHEECDSAWITHNULLSHA":
+			return ECDHE_ECDSA_WITH_NULL_SHA;
+		case "ECDHEECDSAWITHRC4128SHA":
+			return ECDHE_ECDSA_WITH_RC4_128_SHA;
+		case "ECDHEECDSAWITH3DESEDECBCSHA":
+			return ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA;
+		case "ECDHEECDSAWITHAES128CBCSHA":
+			return ECDHE_ECDSA_WITH_AES_128_CBC_SHA;
+		case "ECDHEECDSAWITHAES256CBCSHA":
+			return ECDHE_ECDSA_WITH_AES_256_CBC_SHA;
+		case "ECDHRSAWITHNULLSHA":
+			return ECDH_RSA_WITH_NULL_SHA;
+		case "ECDHRSAWITHRC4128SHA":
+			return ECDH_RSA_WITH_RC4_128_SHA;
+		case "ECDHRSAWITH3DESEDECBCSHA":
+			return ECDH_RSA_WITH_3DES_EDE_CBC_SHA;
+		case "ECDHRSAWITHAES128CBCSHA":
+			return ECDH_RSA_WITH_AES_128_CBC_SHA;
+		case "ECDHRSAWITHAES256CBCSHA":
+			return ECDH_RSA_WITH_AES_256_CBC_SHA;
+		case "ECDHERSAWITHNULLSHA":
+			return ECDHE_RSA_WITH_NULL_SHA;
+		case "ECDHERSAWITHRC4128SHA":
+			return ECDHE_RSA_WITH_RC4_128_SHA;
+		case "ECDHERSAWITH3DESEDECBCSHA":
+			return ECDHE_RSA_WITH_3DES_EDE_CBC_SHA;
+		case "ECDHERSAWITHAES128CBCSHA":
+			return ECDHE_RSA_WITH_AES_128_CBC_SHA;
+		case "ECDHERSAWITHAES256CBCSHA":
+			return ECDHE_RSA_WITH_AES_256_CBC_SHA;
+		case "ECDHANONWITHNULLSHA":
+			return ECDH_anon_WITH_NULL_SHA;
+		case "ECDHANONWITHRC4128SHA":
+			return ECDH_anon_WITH_RC4_128_SHA;
+		case "ECDHANONWITH3DESEDECBCSHA":
+			return ECDH_anon_WITH_3DES_EDE_CBC_SHA;
+		case "ECDHANONWITHAES128CBCSHA":
+			return ECDH_anon_WITH_AES_128_CBC_SHA;
+		case "ECDHANONWITHAES256CBCSHA":
+			return ECDH_anon_WITH_AES_256_CBC_SHA;
+		case "RSAWITHAES128GCMSHA256":
+			return RSA_WITH_AES_128_GCM_SHA256;
+		case "RSAWITHAES256GCMSHA384":
+			return RSA_WITH_AES_256_GCM_SHA384;
+		case "DHERSAWITHAES128GCMSHA256":
+			return DHE_RSA_WITH_AES_128_GCM_SHA256;
+		case "DHERSAWITHAES256GCMSHA384":
+			return DHE_RSA_WITH_AES_256_GCM_SHA384;
+		case "DHRSAWITHAES128GCMSHA256":
+			return DH_RSA_WITH_AES_128_GCM_SHA256;
+		case "DHRSAWITHAES256GCMSHA384":
+			return DH_RSA_WITH_AES_256_GCM_SHA384;
+		case "DHEDSSWITHAES128GCMSHA256":
+			return DHE_DSS_WITH_AES_128_GCM_SHA256;
+		case "DHEDSSWITHAES256GCMSHA384":
+			return DHE_DSS_WITH_AES_256_GCM_SHA384;
+		case "DHDSSWITHAES128GCMSHA256":
+			return DH_DSS_WITH_AES_128_GCM_SHA256;
+		case "DHDSSWITHAES256GCMSHA384":
+			return DH_DSS_WITH_AES_256_GCM_SHA384;
+		case "DHANONWITHAES128GCMSHA256":
+			return DH_anon_WITH_AES_128_GCM_SHA256;
+		case "DHANONWITHAES256GCMSHA384":
+			return DH_anon_WITH_AES_256_GCM_SHA384;
+		case "ECDHEECDSAWITHAES128CBCSHA256":
+			return ECDHE_ECDSA_WITH_AES_128_CBC_SHA256;
+		case "ECDHEECDSAWITHAES256CBCSHA384":
+			return ECDHE_ECDSA_WITH_AES_256_CBC_SHA384;
+		case "ECDHECDSAWITHAES128CBCSHA256":
+			return ECDH_ECDSA_WITH_AES_128_CBC_SHA256;
+		case "ECDHECDSAWITHAES256CBCSHA384":
+			return ECDH_ECDSA_WITH_AES_256_CBC_SHA384;
+		case "ECDHERSAWITHAES128CBCSHA256":
+			return ECDHE_RSA_WITH_AES_128_CBC_SHA256;
+		case "ECDHERSAWITHAES256CBCSHA384":
+			return ECDHE_RSA_WITH_AES_256_CBC_SHA384;
+		case "ECDHRSAWITHAES128CBCSHA256":
+			return ECDH_RSA_WITH_AES_128_CBC_SHA256;
+		case "ECDHRSAWITHAES256CBCSHA384":
+			return ECDH_RSA_WITH_AES_256_CBC_SHA384;
+		case "ECDHEECDSAWITHAES128GCMSHA256":
+			return ECDHE_ECDSA_WITH_AES_128_GCM_SHA256;
+		case "ECDHEECDSAWITHAES256GCMSHA384":
+			return ECDHE_ECDSA_WITH_AES_256_GCM_SHA384;
+		case "ECDHECDSAWITHAES128GCMSHA256":
+			return ECDH_ECDSA_WITH_AES_128_GCM_SHA256;
+		case "ECDHECDSAWITHAES256GCMSHA384":
+			return ECDH_ECDSA_WITH_AES_256_GCM_SHA384;
+		case "ECDHERSAWITHAES128GCMSHA256":
+			return ECDHE_RSA_WITH_AES_128_GCM_SHA256;
+		case "ECDHERSAWITHAES256GCMSHA384":
+			return ECDHE_RSA_WITH_AES_256_GCM_SHA384;
+		case "ECDHRSAWITHAES128GCMSHA256":
+			return ECDH_RSA_WITH_AES_128_GCM_SHA256;
+		case "ECDHRSAWITHAES256GCMSHA384":
+			return ECDH_RSA_WITH_AES_256_GCM_SHA384;
+		case "ECDHERSAWITHCHACHA20POLY1305SHA256":
+			return ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256;
+		case "ECDHEECDSAWITHCHACHA20POLY1305SHA256":
+			return ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256;
+		case "DHERSAWITHCHACHA20POLY1305SHA256":
+			return DHE_RSA_WITH_CHACHA20_POLY1305_SHA256;
+		case "PSKWITHCHACHA20POLY1305SHA256":
+			return PSK_WITH_CHACHA20_POLY1305_SHA256;
+		case "ECDHEPSKWITHCHACHA20POLY1305SHA256":
+			return ECDHE_PSK_WITH_CHACHA20_POLY1305_SHA256;
+		case "DHEPSKWITHCHACHA20POLY1305SHA256":
+			return DHE_PSK_WITH_CHACHA20_POLY1305_SHA256;
+		case "RSAPSKWITHCHACHA20POLY1305SHA256":
+			return RSA_PSK_WITH_CHACHA20_POLY1305_SHA256;
+
+		default:
+			throw new Exception(string.Format(
+				"Unknown cipher suite: '{0}'", s));
+		}
+	}
+
+	/*
 	 * Get a human-readable name for a hash-and-sign algorithm.
 	 */
 	public static string HashAndSignName(int hs)
@@ -521,6 +763,33 @@ public sealed class SSL {
 	}
 
 	/*
+	 * Parse a hash-and-sign name.
+	 */
+	public static int GetHashAndSignByName(string s)
+	{
+		string t = s.Trim().Replace(" ", "").Replace("_", "")
+			.Replace("-", "").Replace("/", "")
+			.ToUpperInvariant();
+		switch (t) {
+		case "RSAMD5":       return RSA_MD5;
+		case "RSASHA1":      return RSA_SHA1;
+		case "RSASHA224":    return RSA_SHA224;
+		case "RSASHA256":    return RSA_SHA256;
+		case "RSASHA384":    return RSA_SHA384;
+		case "RSASHA512":    return RSA_SHA512;
+		case "ECDSAMD5":     return ECDSA_MD5;
+		case "ECDSASHA1":    return ECDSA_SHA1;
+		case "ECDSASHA224":  return ECDSA_SHA224;
+		case "ECDSASHA256":  return ECDSA_SHA256;
+		case "ECDSASHA384":  return ECDSA_SHA384;
+		case "ECDSASHA512":  return ECDSA_SHA512;
+		default:
+			throw new Exception(string.Format(
+				"Unknown hash-and-sign: '{0}'", s));
+		}
+	}
+
+	/*
 	 * Get a human-readable name for a curve.
 	 */
 	public static string CurveName(int id)
@@ -532,6 +801,37 @@ public sealed class SSL {
 		case NIST_P521:   return "NIST_P521";
 		default:
 			return String.Format("UNKNOWN:0x{0:X4}", id);
+		}
+	}
+
+	/*
+	 * Get a curve by name.
+	 */
+	public static int GetCurveByName(string s)
+	{
+		string t = s.Trim().Replace(" ", "").Replace("_", "")
+			.Replace("-", "").ToLowerInvariant();
+		switch (t) {
+		case "c25519":
+		case "curve25519":
+			return Curve25519;
+		case "secp256r1":
+		case "p256":
+		case "nistp256":
+		case "prime256":
+		case "prime256v1":
+			return NIST_P256;
+		case "secp384r1":
+		case "p384":
+		case "nistp384":
+			return NIST_P384;
+		case "secp521r1":
+		case "p521":
+		case "nistp521":
+			return NIST_P521;
+		default:
+			throw new Exception(string.Format(
+				"Unknown curve: '{0}'", s));
 		}
 	}
 
