@@ -139,6 +139,60 @@ public interface IBlockCipher {
 	uint CTRRun(byte[] iv, uint cc, byte[] data, int off, int len);
 
 	/*
+	 * Do combined CTR encryption/decryption and CBC-MAC. The CTR
+	 * mode uses full-block increments (counter value is the
+	 * big-endian interpretation of the complete block); the ctr[]
+	 * array contains the initial value for the counter (used to
+	 * encrypt or decrypt the full block) and it is updated by
+	 * this method as blocks are processed.
+	 *
+	 * The cbcmac[] array has full block width and contains the
+	 * running value for CBC-MAC, computed over the _encrypted_ data.
+	 *
+	 * The flag 'encrypt' is true when encrypting, false when
+	 * decrypting. Note that CTR encryption and decryption are
+	 * identical; thus, the only effect of this flag is to decide
+	 * whether CBC-MAC should be applied on the blocks before or
+	 * after CTR encryption/decryption.
+	 *
+	 * The data is provided in the data[] buffer, and is
+	 * encrypted/decrypted in place. Its length MUST be a multiple
+	 * of the block size.
+	 */
+	void CTRCBCRun(byte[] ctr, byte[] cbcmac, bool encrypt, byte[] data);
+
+	/*
+	 * Do combined CTR encryption/decryption and CBC-MAC. The CTR
+	 * mode uses full-block increments (counter value is the
+	 * big-endian interpretation of the complete block); the ctr[]
+	 * array contains the initial value for the counter (used to
+	 * encrypt or decrypt the full block) and it is updated by
+	 * this method as blocks are processed.
+	 *
+	 * The cbcmac[] array has full block width and contains the
+	 * running value for CBC-MAC, computed over the _encrypted_ data.
+	 *
+	 * The flag 'encrypt' is true when encrypting, false when
+	 * decrypting. Note that CTR encryption and decryption are
+	 * identical; thus, the only effect of this flag is to decide
+	 * whether CBC-MAC should be applied on the blocks before or
+	 * after CTR encryption/decryption.
+	 *
+	 * The data is provided in the data[] buffer, and is
+	 * encrypted/decrypted in place. Its length MUST be a multiple
+	 * of the block size.
+	 */
+	void CTRCBCRun(byte[] ctr, byte[] cbcmac, bool encrypt,
+		byte[] data, int off, int len);
+
+	/*
+	 * Perform CBC-MAC: the cbcmac[] block is updated with the
+	 * CBC-MAC of the data. Data length must be a multiple of the
+	 * block size.
+	 */
+	void CBCMac(byte[] cbcmac, byte[] data, int off, int len);
+
+	/*
 	 * Duplicate this engine. This creates a new, independent
 	 * instance that implements the same function, and starts with
 	 * the same currently set key.

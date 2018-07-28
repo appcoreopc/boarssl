@@ -79,6 +79,10 @@ public abstract class SSLEngine : Stream {
 		SSL.ECDHE_RSA_WITH_AES_128_GCM_SHA256,
 		SSL.ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 		SSL.ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+		SSL.ECDHE_ECDSA_WITH_AES_128_CCM,
+		SSL.ECDHE_ECDSA_WITH_AES_256_CCM,
+		SSL.ECDHE_ECDSA_WITH_AES_128_CCM_8,
+		SSL.ECDHE_ECDSA_WITH_AES_256_CCM_8,
 		SSL.ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
 		SSL.ECDHE_RSA_WITH_AES_128_CBC_SHA256,
 		SSL.ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
@@ -103,6 +107,10 @@ public abstract class SSLEngine : Stream {
 
 		SSL.RSA_WITH_AES_128_GCM_SHA256,
 		SSL.RSA_WITH_AES_256_GCM_SHA384,
+		SSL.RSA_WITH_AES_128_CCM,
+		SSL.RSA_WITH_AES_256_CCM,
+		SSL.RSA_WITH_AES_128_CCM_8,
+		SSL.RSA_WITH_AES_256_CCM_8,
 		SSL.RSA_WITH_AES_128_CBC_SHA256,
 		SSL.RSA_WITH_AES_256_CBC_SHA256,
 		SSL.RSA_WITH_AES_128_CBC_SHA,
@@ -1347,6 +1355,8 @@ public abstract class SSLEngine : Stream {
 		IBlockCipher block = null;
 		IDigest hash = null;
 		Poly1305 pp = null;
+		bool isCCM = false;
+		bool isCCM8 = false;
 		switch (CipherSuite) {
 		case SSL.RSA_WITH_3DES_EDE_CBC_SHA:
 		case SSL.DH_DSS_WITH_3DES_EDE_CBC_SHA:
@@ -1475,6 +1485,42 @@ public abstract class SSLEngine : Stream {
 			block = new AES();
 			break;
 
+		case SSL.RSA_WITH_AES_128_CCM:
+		case SSL.ECDHE_ECDSA_WITH_AES_128_CCM:
+			macLen = 0;
+			encLen = 16;
+			ivLen = 4;
+			block = new AES();
+			isCCM = true;
+			break;
+
+		case SSL.RSA_WITH_AES_256_CCM:
+		case SSL.ECDHE_ECDSA_WITH_AES_256_CCM:
+			macLen = 0;
+			encLen = 32;
+			ivLen = 4;
+			block = new AES();
+			isCCM = true;
+			break;
+
+		case SSL.RSA_WITH_AES_128_CCM_8:
+		case SSL.ECDHE_ECDSA_WITH_AES_128_CCM_8:
+			macLen = 0;
+			encLen = 16;
+			ivLen = 4;
+			block = new AES();
+			isCCM8 = true;
+			break;
+
+		case SSL.RSA_WITH_AES_256_CCM_8:
+		case SSL.ECDHE_ECDSA_WITH_AES_256_CCM_8:
+			macLen = 0;
+			encLen = 32;
+			ivLen = 4;
+			block = new AES();
+			isCCM8 = true;
+			break;
+
 		case SSL.ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:
 		case SSL.ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:
 		case SSL.DHE_RSA_WITH_CHACHA20_POLY1305_SHA256:
@@ -1538,6 +1584,28 @@ public abstract class SSLEngine : Stream {
 			} else {
 				inRec.SetDecryption(
 					new RecordDecryptCBC(block, hm, iv));
+			}
+		} else if (isCCM) {
+			/*
+			 * CCM cipher suite.
+			 */
+			if (write) {
+				outRec.SetEncryption(
+					new RecordEncryptCCM(block, iv, false));
+			} else {
+				inRec.SetDecryption(
+					new RecordDecryptCCM(block, iv, false));
+			}
+		} else if (isCCM8) {
+			/*
+			 * CCM cipher suite with truncated MAC value.
+			 */
+			if (write) {
+				outRec.SetEncryption(
+					new RecordEncryptCCM(block, iv, true));
+			} else {
+				inRec.SetDecryption(
+					new RecordDecryptCCM(block, iv, true));
 			}
 		} else if (block != null) {
 			/*

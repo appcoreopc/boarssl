@@ -43,13 +43,17 @@ namespace Crypto {
  *    void CBCDecrypt(byte[] iv, byte[] data, int off, int len)
  *    uint CTRRun(byte[] iv, uint cc, byte[] data)
  *    uint CTRRun(byte[] iv, uint cc, byte[] data, int off, int len)
+ *    void CTRCBCRun(byte[] ctr, byte[] cbcmac, bool encrypt, byte[] data)
+ *    void CTRCBCRun(byte[] ctr, byte[] cbcmac, bool encrypt,
+ *                   byte[] data, int off, int len)
  * Note that CBCEncrypt(byte[],byte[]) (respectively
- * CBCDecrypt(byte[],byte[]) and CTRRun(byte[],uint,byte[])) simply
- * calls CBCEncrypt(byte[],byte[],int,int) (respectively
- * CBCDecrypt(byte[],byte[],int,int) and
- * CTRRun(byte[],uint,byte[],int,int)) so implementations who wish to
- * override these methods may content themselves with overriding the two
- * methods with the "off" and "len" extra parameters.
+ * CBCDecrypt(byte[],byte[]), CTRRun(byte[],uint,byte[]) and
+ * CTRCBCRun(byte[],byte[],bool,byte[])) simply calls
+ * CBCEncrypt(byte[],byte[],int,int) (respectively
+ * CBCDecrypt(byte[],byte[],int,int), CTRRun(byte[],uint,byte[],int,int)
+ * and CTRCBCRun(byte[],byte[],bool,byte[],int,int)) so implementations
+ * who wish to override these methods may content themselves with
+ * overriding the four methods with the "off" and "len" extra parameters.
  */
 
 public abstract class BlockCipherCore : IBlockCipher {
@@ -213,6 +217,70 @@ public abstract class BlockCipherCore : IBlockCipher {
 			cc ++;
 		}
 		return cc;
+	}
+
+	/*
+	 * This method is implemented by calling
+	 * CTRCBCRun(byte[],byte[],bool,byte[],int,int).
+	 */
+	public virtual void CTRCBCRun(byte[] ctr, byte[] cbcmac,
+		bool encrypt, byte[] data)
+	{
+		CTRCBCRun(ctr, cbcmac, encrypt, data, 0, data.Length);
+	}
+
+	/* see IBlockCipher */
+	public virtual void CTRCBCRun(byte[] ctr, byte[] cbcmac,
+		bool encrypt, byte[] data, int off, int len)
+	{
+		if (!encrypt) {
+			CBCMac(cbcmac, data, off, len);
+		}
+		DoCTRFull(ctr, data, off, len);
+		if (encrypt) {
+			CBCMac(cbcmac, data, off, len);
+		}
+	}
+
+	void DoCTRFull(byte[] ctr, byte[] data, int off, int len)
+	{
+		int blen = BlockSize;
+		if (ctr.Length != blen) {
+			throw new CryptoException("wrong counter length");
+		}
+		while (len > 0) {
+			Array.Copy(ctr, 0, tmp, 0, blen);
+			uint cc = 1;
+			for (int i = blen - 1; i >= 0; i --) {
+				uint x = ctr[i] + cc;
+				ctr[i] = (byte)x;
+				cc = x >> 8;
+			}
+			BlockEncrypt(tmp, 0);
+			int clen = Math.Min(blen, len);
+			for (int i = 0; i < clen; i ++) {
+				data[off + i] ^= tmp[i];
+			}
+			off += clen;
+			len -= clen;
+		}
+	}
+
+	/* see IBlockCipher */
+	public void CBCMac(byte[] cbcmac, byte[] data, int off, int len)
+	{
+		int blen = BlockSize;
+		if (cbcmac.Length != blen) {
+			throw new CryptoException("wrong MAC length");
+		}
+		while (len > 0) {
+			for (int i = 0; i < blen; i ++) {
+				cbcmac[i] ^= data[off + i];
+			}
+			BlockEncrypt(cbcmac, 0);
+			off += blen;
+			len -= blen;
+		}
 	}
 
 	/* see IBlockCipher */
